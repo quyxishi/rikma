@@ -1,2 +1,2 @@
 # rikma
-Simple encryptor/decryptor files on python
+Simple asymmetric encryptor/decryptor files on python
