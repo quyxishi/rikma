@@ -124,5 +124,14 @@ if __name__ == '__main__':
             print('\nTotal decrypted files: ' + str(result))
             print('Estimated time: ' + str(totaltime))
     else:
-        print('''
-Usage: rikma.py [-e, --encrypt] [-d, --decrypt]''')
+        if '-h' in str(sys.argv) or '--help' in str(sys.argv):
+            print('''
+Usage: rikma.py [-h, --help] 
+                [-e, --encrypt] [-d, --decrypt]
+
+Optional arguments:
+    -h, --help        Show this message
+    -e, --encrypt     Run in encrypt mode
+    -d, --decrypt     Run in decrypt mode''')
+        else:
+            print('Invalid usage, run "rikma.py --help" for details')
