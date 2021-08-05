@@ -9,13 +9,13 @@ Usage
 ----
 * Encrypt
 ```
-python rikma.py -e
+$ python rikma.py -e
 ```
 * Decrypt
 ```
-python rikma.py -d
+$ python rikma.py -d
 ```
 * Get help
 ```
-python rikma.py -h
+$ python rikma.py -h
 ```
