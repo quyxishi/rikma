@@ -1,5 +1,5 @@
 # rikma
-Simple symmetrical encryptor/decryptor on python
+Simple aes-256 encryptor/decryptor on python
 
 <p align="center">
   <img src="https://user-images.githubusercontent.com/78678868/128592979-4a312a69-b497-4c2f-b63f-c2b749a12cd5.png" width=60% height=60%>
