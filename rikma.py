@@ -29,7 +29,7 @@ def encrypt(path):
     for name in os.listdir(path):
         try:
             if os.path.isfile(os.path.join(path, name)):
-                if name != 'desktop.ini' and '.aes' not in name:
+                if '.aes' not in name:
                     print('\nEncrypting:         ', name)
                     print('Path:               ', os.path.join(path, name))
                     print('Size:               ', getSize(os.path.join(path, name)))
@@ -43,9 +43,8 @@ def encrypt(path):
                     print('Key:                 "'+key+'"')
                     os.remove(os.path.join(path, name))
                     result += 1
-            else:
-                if 'desktop.ini' not in os.path.join(path, name):
-                    encrypt(os.path.join(path, name))
+            elif '-a' in str(sys.argv) or '--all' in str(sys.argv):
+                encrypt(os.path.join(path, name))
         except Exception as ex:
             print(ex)
             pass
@@ -70,9 +69,8 @@ def decrypt(path):
                     print('Key:                 "'+key+'"')
                     os.remove(os.path.join(path, name))
                     result += 1
-            else:
-                if 'desktop.ini' not in os.path.join(path, name):
-                    decrypt(os.path.join(path, name))
+            elif '-a' in str(sys.argv) or '--all' in str(sys.argv):
+                decrypt(os.path.join(path, name))
         except Exception as ex:
             print(ex)
             pass
@@ -82,11 +80,11 @@ if __name__ == '__main__':
         try:
             print(rikmaLogo)
             if '-e' in str(sys.argv) or '--encrypt' in str(sys.argv):
-                pathq = input('Path, example C:\\Users\\Admin\\Desktop:\n> ')
+                pathq = input('Path, example C:\\Users\\Admin\\Desktop, ./Desktop :\n> ')
 
                 if not os.path.exists(pathq):
                     while not os.path.exists(pathq):
-                        pathq = input('Incorrect path, example C:\\Users\\Admin\\Desktop:\n> ')
+                        pathq = input('Incorrect path, example C:\\Users\\Admin\\Desktop, ./Desktop :\n> ')
                         time.sleep(0.05)
 
                 passq = input('Key, leave empty if you want to generate key:\n> ')
@@ -116,11 +114,11 @@ if __name__ == '__main__':
                 print('\nTotal encrypted files: ' + str(result))
                 print('Estimated time: ' + str(totaltime))
             elif '-d' in str(sys.argv) or '--decrypt' in str(sys.argv):
-                pathq = input('Path, example C:\\Users\\Admin\\Desktop:\n> ')
+                pathq = input('Path, example C:\\Users\\Admin\\Desktop, ./Desktop :\n> ')
 
                 if not os.path.exists(pathq):
                     while not os.path.exists(pathq):
-                        pathq = input('Incorrect path, example C:\\Users\\Admin\\Desktop:\n> ')
+                        pathq = input('Incorrect path, example C:\\Users\\Admin\\Desktop, ./Desktop :\n> ')
                         time.sleep(0.05)
 
                 passq = input('Key:\n> ')
@@ -144,12 +142,13 @@ if __name__ == '__main__':
     else:
         if '-h' in str(sys.argv) or '--help' in str(sys.argv):
             print('''
-Usage: rikma.py [-h, --help] 
+Usage: rikma.py [-h, --help] [-a, --all-folders]
                 [-e, --encrypt] [-d, --decrypt]
 
 Optional arguments:
-    -h, --help        Show this message
-    -e, --encrypt     Run in encrypt mode
-    -d, --decrypt     Run in decrypt mode''')
+    -h, --help          Show this message
+    -e, --encrypt       Run in encrypt mode
+    -d, --decrypt       Run in decrypt mode
+    -a, --all           Encrypt/decrypt all files in folders in your path''')
         else:
             print('Invalid usage, run "rikma.py --help" for details')
