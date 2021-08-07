@@ -15,9 +15,9 @@ $ python rikma.py -e
 ```
 $ python rikma.py -d
 ```
-* Encrypt/decrypt all folders in your path
+* Encrypt all folders in your path
 ```
-$ python rikma.py [-e, -d] -a
+$ python rikma.py -e -a
 ```
 * Get help
 ```
