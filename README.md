@@ -1,9 +1,9 @@
 # rikma
 Simple symmetrical encryptor/decryptor on python
 
-<!--<p align="center">
-  <img src="https://user-images.githubusercontent.com/78678868/111616826-2b24a280-8804-11eb-8182-7784929978a9.png">
-</p>-->
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/78678868/128592979-4a312a69-b497-4c2f-b63f-c2b749a12cd5.png" width=60% height=60%>
+</p>
 
 Usage
 ----
