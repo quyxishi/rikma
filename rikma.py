@@ -149,6 +149,6 @@ Optional arguments:
     -h, --help          Show this message
     -e, --encrypt       Run in encrypt mode
     -d, --decrypt       Run in decrypt mode
-    -a, --all           Encrypt/decrypt all files in folders in your path''')
+    -a, --all           Encrypt/decrypt all folders in your path''')
         else:
             print('Invalid usage, run "rikma.py --help" for details')
