@@ -135,7 +135,7 @@ if __name__ == '__main__':
                 decrypt(pathq)
                 totaltime = time.time() - starttime
                 print('\nTotal decrypted files: ' + str(result))
-                print('Estimated time: ' + str(totaltime))
+                print('Elapsed time: ' + str(totaltime))
         except KeyboardInterrupt:
             print('\nKeyboardInterrupt')
             quit()
