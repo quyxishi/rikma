@@ -2,7 +2,7 @@
 aes-256 encryptor/decryptor on python🐍
 
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/78678868/128825418-c9457805-9022-4579-ae19-27a9ddccb38e.png" width=70% height=70%>
+  <img src="https://user-images.githubusercontent.com/78678868/130137480-46a72bd3-d7ee-413d-942b-b03a8931ba87.png" width=70% height=70%>
 </p>
 
 Usage
