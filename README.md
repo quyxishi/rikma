@@ -15,10 +15,14 @@ $ python rikma.py -e
 ```
 $ python rikma.py -d
 ```
-* Encrypt/decrypt all folders in your path
+* Encrypt/decrypt all subfolders in your path
 ```
 $ python rikma.py -e -a
 $ python rikma.py -d -a
+```
+* Encrypt with new key for each file
+```
+$ python rikma.py -e -g
 ```
 * Get help
 ```
