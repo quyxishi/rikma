@@ -24,7 +24,10 @@ def getSize(file):
     st = os.stat(file).st_size
     return humanize.naturalsize(st)
 
-def encrypt(path):
+def randomStr(str_size):
+    return ''.join(random.choice('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#$%&-/?@\^_|~0123456789') for _ in range(str_size))
+
+def encrypt(path, key):
     global result
     for name in os.listdir(path):
         try:
@@ -33,10 +36,11 @@ def encrypt(path):
                     print('\nEncrypting:         ', name)
                     print('Path:               ', os.path.join(path, name))
                     print('Size:               ', getSize(os.path.join(path, name)))
+                    key = randomStr(int(lengthq)) if '-g' in str(sys.argv) or '--gen-each' in str(sys.argv) else key
                     pyAesCrypt.encryptFile(os.path.join(path, name),
-                                           os.path.join(path, name + '.aes'),
-                                           key,
-                                           bufferSize)
+                                        os.path.join(path, name + '.aes'),
+                                        key,
+                                        bufferSize)
                     print('Encrypted name:     ', name + '.aes')
                     print('Encrypted path:     ', os.path.join(path, name + '.aes'))
                     print('Encrypted size:     ', getSize(os.path.join(path, name + '.aes')))
@@ -44,13 +48,13 @@ def encrypt(path):
                     os.remove(os.path.join(path, name))
                     result += 1
             elif '-a' in str(sys.argv) or '--all' in str(sys.argv):
-                encrypt(os.path.join(path, name))
+                encrypt(os.path.join(path, name), key)
         except Exception as ex:
             print(ex)
             pass
 
 
-def decrypt(path):
+def decrypt(path, key):
     global result
     for name in os.listdir(path):
         try:
@@ -70,7 +74,7 @@ def decrypt(path):
                     os.remove(os.path.join(path, name))
                     result += 1
             elif '-a' in str(sys.argv) or '--all' in str(sys.argv):
-                decrypt(os.path.join(path, name))
+                decrypt(os.path.join(path, name), key)
         except Exception as ex:
             print(ex)
             pass
@@ -80,45 +84,48 @@ if __name__ == '__main__':
         try:
             print(rikmaLogo)
             if '-e' in str(sys.argv) or '--encrypt' in str(sys.argv):
-                pathq = input('Path, example C:\\Users\\Admin\\Desktop, ./Desktop :\n> ')
+                pathq = input('Path, example C:\\Users\\Admin\\Desktop, .\Desktop :\n> ')
 
                 if not os.path.exists(pathq):
                     while not os.path.exists(pathq):
-                        pathq = input('Incorrect path, example C:\\Users\\Admin\\Desktop, ./Desktop :\n> ')
+                        pathq = input('Incorrect path, example C:\\Users\\Admin\\Desktop, .\Desktop :\n> ')
                         time.sleep(0.05)
+                
+                if not '-g' in str(sys.argv) and not '--gen-each' in str(sys.argv):
+                    passq = input('Key, leave empty if you want to generate key:\n> ')
 
-                passq = input('Key, leave empty if you want to generate key:\n> ')
+                    if passq == ' ' or passq == '':
+                        lengthq = input('Length of generated key (4-256):\n> ')
 
-                if passq == ' ' or passq == '':
-                    lengthq = input('Length of generated key (4-256):\n> ')
+                        if 4 <= int(lengthq) <= 257:
+                            lengthq = lengthq
+                        else:
+                            lengthq = '4'
+
+                        size = int(lengthq)
+                        key = randomStr(size)
+                    else:
+                        key = passq
+                else:
+                    lengthq = input('Length of generated keys (4-256):\n> ')
 
                     if 4 <= int(lengthq) <= 257:
                         lengthq = lengthq
                     else:
                         lengthq = '4'
 
-
-                    def random_string_generator(str_size, allowed_chars):
-                        return ''.join(random.choice(allowed_chars) for _ in range(str_size))
-
-
-                    chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!#$%&-/?@\^_|~0123456789'
-                    size = int(lengthq)
-                    key = random_string_generator(size, chars)
-                else:
-                    key = passq
-
+                print('\nEncrypting in path '+pathq)
                 starttime = time.time()
-                encrypt(pathq)
+                encrypt(pathq, key)
                 totaltime = time.time() - starttime
                 print('\nTotal encrypted files: ' + str(result))
-                print('Estimated time: ' + str(totaltime))
+                print('Elapsed time: ' + str(totaltime))
             elif '-d' in str(sys.argv) or '--decrypt' in str(sys.argv):
-                pathq = input('Path, example C:\\Users\\Admin\\Desktop, ./Desktop :\n> ')
+                pathq = input('Path, example C:\\Users\\Admin\\Desktop, .\Desktop :\n> ')
 
                 if not os.path.exists(pathq):
                     while not os.path.exists(pathq):
-                        pathq = input('Incorrect path, example C:\\Users\\Admin\\Desktop, ./Desktop :\n> ')
+                        pathq = input('Incorrect path, example C:\\Users\\Admin\\Desktop, .\Desktop :\n> ')
                         time.sleep(0.05)
 
                 passq = input('Key:\n> ')
@@ -131,8 +138,9 @@ if __name__ == '__main__':
                         time.sleep(0.05)
                     key = passq
 
+                print('\nDecrypting in path '+pathq)
                 starttime = time.time()
-                decrypt(pathq)
+                decrypt(pathq, key)
                 totaltime = time.time() - starttime
                 print('\nTotal decrypted files: ' + str(result))
                 print('Elapsed time: ' + str(totaltime))
@@ -142,13 +150,14 @@ if __name__ == '__main__':
     else:
         if '-h' in str(sys.argv) or '--help' in str(sys.argv):
             print('''
-Usage: rikma.py [-h, --help] [-a, --all-folders]
+Usage: rikma.py [-h, --help] [-a, --all-folders] [-g, --gen-each]
                 [-e, --encrypt] [-d, --decrypt]
 
 Optional arguments:
     -h, --help          Show this message
     -e, --encrypt       Run in encrypt mode
     -d, --decrypt       Run in decrypt mode
-    -a, --all           Encrypt/decrypt all folders in your path''')
+    -a, --all           Encrypt/decrypt all files in subfolders in your path
+    -g, --gen-each      Generate new key for each file in encrypt mode''')
         else:
             print('Invalid usage, run "rikma.py --help" for details')
