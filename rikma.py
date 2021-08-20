@@ -33,21 +33,24 @@ def encrypt(path, key):
         try:
             if os.path.isfile(os.path.join(path, name)):
                 if '.aes' not in name:
-                    print('\nEncrypting:         ', name)
-                    print('Path:               ', os.path.join(path, name))
-                    print('Size:               ', getSize(os.path.join(path, name)))
+                    if not '-f' in str(sys.argv) and not '--folders' in str(sys.argv):
+                        print('\nEncrypting:         ', name)
+                        print('Path:               ', os.path.join(path, name))
+                        print('Size:               ', getSize(os.path.join(path, name)))
                     key = randomStr(int(lengthq)) if '-g' in str(sys.argv) or '--gen-each' in str(sys.argv) else key
                     pyAesCrypt.encryptFile(os.path.join(path, name),
                                         os.path.join(path, name + '.aes'),
                                         key,
                                         bufferSize)
-                    print('Encrypted name:     ', name + '.aes')
-                    print('Encrypted path:     ', os.path.join(path, name + '.aes'))
-                    print('Encrypted size:     ', getSize(os.path.join(path, name + '.aes')))
-                    print('Key:                 "'+key+'"')
+                    if not '-f' in str(sys.argv) and not '--folders' in str(sys.argv):
+                        print('Encrypted name:     ', name + '.aes')
+                        print('Encrypted path:     ', os.path.join(path, name + '.aes'))
+                        print('Encrypted size:     ', getSize(os.path.join(path, name + '.aes')))
+                        print('Key:                 "'+key+'"')
                     os.remove(os.path.join(path, name))
                     result += 1
             elif '-a' in str(sys.argv) or '--all' in str(sys.argv):
+                xd = print('Encrypting          ', os.path.join(path, name)) if '-f' in str(sys.argv) or '--folders' in str(sys.argv) else ''
                 encrypt(os.path.join(path, name), key)
         except Exception as ex:
             print(ex)
@@ -60,20 +63,23 @@ def decrypt(path, key):
         try:
             if os.path.isfile(os.path.join(path, name)):
                 if '.aes' in name:
-                    print('\nDecrypting          ', name)
-                    print('Path:               ', os.path.join(path, name))
-                    print('Size:               ', getSize(os.path.join(path, name)))
+                    if not '-f' in str(sys.argv) and not '--folders' in str(sys.argv):
+                        print('\nDecrypting          ', name)
+                        print('Path:               ', os.path.join(path, name))
+                        print('Size:               ', getSize(os.path.join(path, name)))
                     pyAesCrypt.decryptFile(os.path.join(path, name),
                                            os.path.join(path, name.replace('.aes', '')),
                                            key,
                                            bufferSize)
-                    print('Decrypted name:     ', name.replace('.aes', ''))
-                    print('Decrypted path:     ', os.path.join(path, name.replace('.aes', '')))
-                    print('Decrypted size:     ', getSize(os.path.join(path, name.replace('.aes', ''))))
-                    print('Key:                 "'+key+'"')
+                    if not '-f' in str(sys.argv) and not '--folders' in str(sys.argv):
+                        print('Decrypted name:     ', name.replace('.aes', ''))
+                        print('Decrypted path:     ', os.path.join(path, name.replace('.aes', '')))
+                        print('Decrypted size:     ', getSize(os.path.join(path, name.replace('.aes', ''))))
+                        print('Key:                 "'+key+'"')
                     os.remove(os.path.join(path, name))
                     result += 1
             elif '-a' in str(sys.argv) or '--all' in str(sys.argv):
+                xd = print('Decrypting          ', os.path.join(path, name)) if '-f' in str(sys.argv) or '--folders' in str(sys.argv) else ''
                 decrypt(os.path.join(path, name), key)
         except Exception as ex:
             print(ex)
@@ -114,7 +120,7 @@ if __name__ == '__main__':
                     else:
                         lengthq = '4'
 
-                print('\nEncrypting in path '+pathq)
+                print('\nEncrypting in '+pathq)
                 starttime = time.time()
                 encrypt(pathq, key)
                 totaltime = time.time() - starttime
@@ -138,7 +144,7 @@ if __name__ == '__main__':
                         time.sleep(0.05)
                     key = passq
 
-                print('\nDecrypting in path '+pathq)
+                print('\nDecrypting in '+pathq)
                 starttime = time.time()
                 decrypt(pathq, key)
                 totaltime = time.time() - starttime
@@ -150,7 +156,7 @@ if __name__ == '__main__':
     else:
         if '-h' in str(sys.argv) or '--help' in str(sys.argv):
             print('''
-Usage: rikma.py [-h, --help] [-a, --all-folders] [-g, --gen-each]
+Usage: rikma.py [-h, --help] [-a, --all-folders] [-g, --gen-each] [-f, --folders]
                 [-e, --encrypt] [-d, --decrypt]
 
 Optional arguments:
@@ -158,6 +164,7 @@ Optional arguments:
     -e, --encrypt       Run in encrypt mode
     -d, --decrypt       Run in decrypt mode
     -a, --all           Encrypt/decrypt all files in subfolders in your path
-    -g, --gen-each      Generate new key for each file in encrypt mode''')
+    -g, --gen-each      Generate new key for each file in encrypt mode
+    -f, --folders       Show folders only''')
         else:
             print('Invalid usage, run "rikma.py --help" for details')
