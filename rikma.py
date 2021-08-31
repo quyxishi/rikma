@@ -44,7 +44,7 @@ if '-g' in str(sys.argv) or '--gen-keys' in str(sys.argv):
                 keyLen = int(sys.argv[keysPos+2])
         except Exception as ex:
             if 'index out of range' in str(ex):
-                print(f'Error: the {sys.argv[keysPos]} argument requires 2 variables: <keys>, <lenght>')
+                print(f'Error: the {sys.argv[keysPos]} argument requires 2 variables: <keys>, <length>')
             elif 'invalid literal for int()' in str(ex):
                 print(f'Error: variables for {sys.argv[keysPos]} argument, must be integer')
             else:
@@ -259,7 +259,7 @@ if __name__ == '__main__':
         if '-h' in str(sys.argv) or '--help' in str(sys.argv):
             print('''
 Usage: rikma.py [-h, --help] [-a, --all-folders] [-f, --folders]
-                [-g, --gen-keys <keys> <lenght>] [-l, --log-file <file>]
+                [-g, --gen-keys <keys> <length>] [-l, --log-file <file>]
                 [-e, --encrypt] [-d, --decrypt]
 
 Required arguments:
@@ -269,7 +269,7 @@ Required arguments:
 Optional arguments:
     -h, --help                      Show this message
     -a, --all                       Encrypt/decrypt all files in subfolders
-    -g, --gen-keys <keys> <lenght>  Generate <keys> key/s with lenght <lenght> chars for encrypt mode
+    -g, --gen-keys <keys> <length>  Generate <keys> key/s with length <length> chars for encrypt mode
     -f, --folders                   Show folders only
     -l, --log-file <file>           Create rikma log file''')
         else:
