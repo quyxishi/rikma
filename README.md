@@ -20,7 +20,7 @@ $ python rikma.py -d
 $ python rikma.py -e -a
 $ python rikma.py -d -a
 ```
-* Encrypt with 3 keys with 8 chars lenght
+* Encrypt with generated 3 keys with 8 chars length
 ```
 $ python rikma.py -e -g 3 8
 ```
