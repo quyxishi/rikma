@@ -92,8 +92,59 @@ def genKeys(keys, keyLen):
             print(f'  "{keysList[i]}"')
         print('')
 
+def secureDelete(path):
+    try:
+        with open(path, "ba+") as f:
+            length = f.tell()
+            f.close()
+        with open(path, "br+") as f:
+            f.seek(0)
+            f.write(os.urandom(length))
+            f.close()
+        os.remove(path)
+    except Exception as ex:
+        print(ex)
+
 def encrypt(path, key):
     global result
+    if '-o' in str(sys.argv) or '--one-file':
+        try:
+            name = os.path.basename(path)
+            path = path.replace(name, '')
+            size = getSize(os.path.join(path, name))
+            print('\nEncrypting:         ', name)
+            print('Path:               ', os.path.join(path, name))
+            print('Size:               ', size)
+
+            key = random.choice(keysList) if '-g' in str(sys.argv) or '--gen-keys' in str(sys.argv) else key
+            pyAesCrypt.encryptFile(os.path.join(path, name),
+                                os.path.join(path, name + '.aes'),
+                                key,
+                                bufferSize)
+            encSize = getSize(os.path.join(path, name + '.aes'))
+
+            print('Encrypted name:     ', name + '.aes')
+            print('Encrypted path:     ', os.path.join(path, name + '.aes'))
+            print('Encrypted size:     ', encSize)
+            print('Key:                 "'+key+'"')
+            if logFile != '':
+                logFile.write(f'''
+Encrypting:         {name}
+Path:               {os.path.join(path, name)}
+Size:               {size}
+Encrypted name:     {name + '.aes'}
+Encrypted path:     {os.path.join(path, name + '.aes')}
+Encrypted size:     {encSize}
+Key:                "{key}"
+''')
+            print('Rewriting old file ...')
+            secureDelete(os.path.join(path, name))
+            result += 1
+            return
+        except Exception as ex:
+            print(ex)
+            return
+
     for name in os.listdir(path):
         try:
             if os.path.isfile(os.path.join(path, name)):
@@ -124,7 +175,8 @@ Encrypted path:     {os.path.join(path, name + '.aes')}
 Encrypted size:     {encSize}
 Key:                "{key}"
 ''')
-                    os.remove(os.path.join(path, name))
+                    print('Rewriting old file ...')
+                    secureDelete(os.path.join(path, name))
                     result += 1
             elif '-a' in str(sys.argv) or '--all' in str(sys.argv):
                 xd = print('Encrypting          ', os.path.join(path, name)) if '-f' in str(sys.argv) or '--folders' in str(sys.argv) else ''
@@ -136,6 +188,43 @@ Key:                "{key}"
 
 def decrypt(path, key):
     global result
+    if '-o' in str(sys.argv) or '--one-file':
+        try:
+            name = os.path.basename(path)
+            path = path.replace(name, '')
+            size = getSize(os.path.join(path, name))
+            print('\nDecrypting:         ', name)
+            print('Path:               ', os.path.join(path, name))
+            print('Size:               ', size)
+
+            pyAesCrypt.decryptFile(os.path.join(path, name),
+                                           os.path.join(path, name.replace('.aes', '')),
+                                           key,
+                                           bufferSize)
+            decSize = getSize(os.path.join(path, name.replace('.aes', '')))
+
+            print('Decrypted name:     ', name + '.aes')
+            print('Decrypted path:     ', os.path.join(path, name + '.aes'))
+            print('Decrypted size:     ', decSize)
+            print('Key:                 "'+key+'"')
+            if logFile != '':
+                logFile.write(f'''
+Decrypting:         {name}
+Path:               {os.path.join(path, name)}
+Size:               {size}
+Decrypted name:     {name.replace('.aes', '')}
+Decrypted path:     {os.path.join(path, name.replace('.aes', ''))}
+Decrypted size:     {decSize}
+Key:                "{key}"
+''')
+            print('Rewriting old file ...')
+            secureDelete(os.path.join(path, name))
+            result += 1
+            return
+        except Exception as ex:
+            print(ex)
+            return
+
     for name in os.listdir(path):
         try:
             if os.path.isfile(os.path.join(path, name)):
@@ -164,8 +253,9 @@ Decrypted name:     {name.replace('.aes', '')}
 Decrypted path:     {os.path.join(path, name.replace('.aes', ''))}
 Decrypted size:     {decSize}
 Key:                "{key}"
-''')
-                    os.remove(os.path.join(path, name))
+''')                
+                    print('Rewriting old file ...')
+                    secureDelete(os.path.join(path, name))
                     result += 1
             elif '-a' in str(sys.argv) or '--all' in str(sys.argv):
                 xd = print('Decrypting          ', os.path.join(path, name)) if '-f' in str(sys.argv) or '--folders' in str(sys.argv) else ''
@@ -183,12 +273,22 @@ if __name__ == '__main__':
                     key = ''
                     genKeys(keys, keyLen)
 
-                pathq = input('Path, example C:\\Users\\Admin\\Desktop, .\Desktop :\n> ')
+                pathq = input('Path, example C:\\Users\\Admin\\Desktop, .\Desktop :\n> ') if '-o' not in str(sys.argv) and '--one-file' not in str(sys.argv) else input('Path to file, example C:\\Users\\Admin\\Desktop\\file.txt, .\\Desktop\\file.txt :\n> ')
 
-                if not os.path.exists(pathq):
-                    while not os.path.exists(pathq):
-                        pathq = input('Incorrect path, example C:\\Users\\Admin\\Desktop, .\Desktop :\n> ')
-                        time.sleep(0.05)
+                if '-o' not in str(sys.argv) and '--one-file' not in str(sys.argv):
+                    if not os.path.exists(pathq):
+                        while not os.path.exists(pathq):
+                            pathq = input('Incorrect path, example C:\\Users\\Admin\\Desktop, .\Desktop :\n> ')
+                            time.sleep(0.05)
+                else:
+                    if not os.path.isfile(pathq):
+                        while True:
+                            pathq = input('Incorrect file path, example C:\\Users\\Admin\\Desktop\\file.txt, .\\Desktop\\file.txt :\n> ')
+                            
+                            if os.path.exists(pathq) and os.path.isfile(pathq):
+                                break
+                            
+                            time.sleep(0.05)
                 
                 if not '-g' in str(sys.argv) and not '--gen-keys' in str(sys.argv):
                     passq = input('Key, leave empty if you want to generate key:\n> ')
@@ -211,7 +311,7 @@ if __name__ == '__main__':
                     logFile = open(logFile, 'w')
                     logFile.write(rikmaLogo)
                     logFile.write('\n{~} '+time.strftime('%a, %d %b %Y %H:%M:%S', time.gmtime(time.time()))+'\n')
-                print('\nEncrypting in '+pathq)
+                xd = print('\nEncrypting in '+pathq) if '-o' not in str(sys.argv) and '--one-file' not in str(sys.argv) else print('\nEncrypting '+pathq)
                 starttime = time.time()
                 encrypt(pathq, key)
                 totaltime = time.time() - starttime
@@ -221,12 +321,22 @@ if __name__ == '__main__':
                     logFile.write(f'\nTotal encrypted files: {str(result)}\nElapsed time: {str(totaltime)}\n')
                     logFile.close()
             elif '-d' in str(sys.argv) or '--decrypt' in str(sys.argv):
-                pathq = input('Path, example C:\\Users\\Admin\\Desktop, .\Desktop :\n> ')
+                pathq = input('Path, example C:\\Users\\Admin\\Desktop, .\Desktop :\n> ') if '-o' not in str(sys.argv) and '--one-file' not in str(sys.argv) else input('Path to file, example C:\\Users\\Admin\\Desktop\\file.txt, .\\Desktop\\file.txt :\n> ')
 
-                if not os.path.exists(pathq):
-                    while not os.path.exists(pathq):
-                        pathq = input('Incorrect path, example C:\\Users\\Admin\\Desktop, .\Desktop :\n> ')
-                        time.sleep(0.05)
+                if '-o' not in str(sys.argv) and '--one-file' not in str(sys.argv):
+                    if not os.path.exists(pathq):
+                        while not os.path.exists(pathq):
+                            pathq = input('Incorrect path, example C:\\Users\\Admin\\Desktop, .\Desktop :\n> ')
+                            time.sleep(0.05)
+                else:
+                    if not os.path.isfile(pathq):
+                        while True:
+                            pathq = input('Incorrect file path, example C:\\Users\\Admin\\Desktop\\file.txt, .\\Desktop\\file.txt :\n> ')
+                            
+                            if os.path.exists(pathq) and os.path.isfile(pathq):
+                                break
+                            
+                            time.sleep(0.05)
 
                 passq = input('Key:\n> ')
 
@@ -243,7 +353,7 @@ if __name__ == '__main__':
                     logFile = open(logFile, 'w')
                     logFile.write(rikmaLogo)
                     logFile.write('\n{~} '+time.strftime('%a, %d %b %Y %H:%M:%S', time.gmtime(time.time()))+'\n')
-                print('\nDecrypting in '+pathq)
+                print('\nDecrypting in '+pathq) if '-o' not in str(sys.argv) and '--one-file' not in str(sys.argv) else print('\nDecrypting '+pathq)
                 starttime = time.time()
                 decrypt(pathq, key)
                 totaltime = time.time() - starttime
@@ -257,9 +367,9 @@ if __name__ == '__main__':
             exitOnException()
     else:
         if '-h' in str(sys.argv) or '--help' in str(sys.argv):
-            print('''
-Usage: rikma.py [-h, --help] [-a, --all-folders] [-f, --folders]
-                [-g, --gen-keys <keys> <length>] [-l, --log-file <file>]
+            print(rikmaLogo)
+            print('''Usage: rikma.py [-h, --help] [-a, --all-folders] [-f, --folders]
+                [-g, --gen-keys <keys> <length>] [-l, --log-file <file>] [-o, --one-file]
                 [-e, --encrypt] [-d, --decrypt]
 
 Required arguments:
@@ -269,6 +379,7 @@ Required arguments:
 Optional arguments:
     -h, --help                      Show this message
     -a, --all                       Encrypt/decrypt all files in subfolders
+    -o, --one-file                  Encrypt/decrypt only one file
     -g, --gen-keys <keys> <length>  Generate <keys> key/s with length <length> chars for encrypt mode
     -f, --folders                   Show folders only
     -l, --log-file <file>           Create rikma log file''')
