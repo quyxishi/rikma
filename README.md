@@ -44,7 +44,7 @@ $ python rikma.py --encrypt
 ```
 $ python rikma.py --decrypt
 ```
-* Encrypt/Decrypt only one file
+* Encrypt/decrypt only one file
 ```
 $ python rikma.py --encrypt
 $ python rikma.py --decrypt --one-file
