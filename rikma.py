@@ -107,7 +107,8 @@ def secureDelete(path):
 
 def encrypt(path, key):
     global result
-    if '-o' in str(sys.argv) or '--one-file':
+    if '-o' in str(sys.argv) or '--one-file' in str(sys.argv):
+        print('o')
         try:
             name = os.path.basename(path)
             path = path.replace(name, '')
@@ -188,7 +189,7 @@ Key:                "{key}"
 
 def decrypt(path, key):
     global result
-    if '-o' in str(sys.argv) or '--one-file':
+    if '-o' in str(sys.argv) or '--one-file' in str(sys.argv):
         try:
             name = os.path.basename(path)
             path = path.replace(name, '')
