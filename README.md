@@ -46,7 +46,7 @@ $ python rikma.py --decrypt
 ```
 * Encrypt/decrypt only one file
 ```
-$ python rikma.py --encrypt
+$ python rikma.py --encrypt --one-file
 $ python rikma.py --decrypt --one-file
 ```
 * Encrypt/decrypt all subfolders in your path
