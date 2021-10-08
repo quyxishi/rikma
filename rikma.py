@@ -1,13 +1,22 @@
-try:
-    import os
+import os
+
+if 'posix' in os.name:
     import pyAesCrypt
     import random
     import sys
     import humanize
     import time
     import datetime
-except ImportError:
-    print('Missing modules, run "pip install -r requirements.txt"')
+else:
+    try:
+        import pyAesCrypt
+        import random
+        import sys
+        import humanize
+        import time
+        import datetime
+    except ImportError:
+        print('Missing modules, run "pip install -r requirements.txt"')
 
 keysPos = 0
 keys = 0
