@@ -2,65 +2,71 @@
 aes-256 encryptor/decryptor on python🐍
 
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/78678868/130137480-46a72bd3-d7ee-413d-942b-b03a8931ba87.png" width=70% height=70%>
+  <img src="https://user-images.githubusercontent.com/78678868/156518487-10021ef5-02a6-4f20-9fc1-64761bc3dcb1.gif" width=70% height=70%>
 </p>
 
 Usage
 ----
 
 ```
-                  .=-.-.,--.-.,-.         ___    ,---.      
-      .-.,.---.  /==/_ /==/- |\  \ .-._ .'=.'\ .--.'  \     
-     /==/  `   \|==|, ||==|_ `/_ //==/ \|==|  |\==\-/\ \    
-    |==|-, .=., |==|  ||==| ,   / |==|,|  / - |/==/-|_\ |   
-    |==|   '='  /==|- ||==|-  .|  |==|  \/  , |\==\,   - \  
-    |==|- ,   .'|==| ,||==| _ , \ |==|- ,   _ |/==/ -   ,|  
-    |==|_  . ,'.|==|- |/==/  '\  ||==| _ /\   /==/-  /\ - \ 
-    /==/  /\ ,  )==/. /\==\ /\=\.'/==/  / / , |==\ _.\=\.-' 
-    `--`-`--`--'`--`-`  `--`      `--`./  `--` `--`         
+         \                     
+ .___  ` |   , , _ , _     ___ 
+ /   \ | |  /  |' `|' `.  /   `
+ |   ' | |-<   |   |   | |    |
+ /     / /  \_ /   '   / `.__/|
+ 
+ 
+usage: rikma.py [-h, --help]
+                [--encrypt] [--decrypt]
+                [--type <file/folder>] [--path <object>]
+                [--password <pass>] [--gen-password <len>]
+                [--dnp-gen-password] [--dnw-gen-password]
+                [--no-colors]
+                [--version]
 
-Usage: rikma.py [-h, --help] [-a, --all-folders] [-f, --folders]
-                [-g, --gen-keys <keys> <length>] [-l, --log-file <file>] [-o, --one-file]
-                [-e, --encrypt] [-d, --decrypt]
+encrypt/decrypt files with aes-256 encryption
 
-Required arguments:
-    -e, --encrypt                   Run in encrypt mode
-    -d, --decrypt                   Run in decrypt mode
-
-Optional arguments:
-    -h, --help                      Show this message
-    -a, --all                       Encrypt/decrypt all files in subfolders
-    -o, --one-file                  Encrypt/decrypt only one file
-    -g, --gen-keys <keys> <length>  Generate <keys> key/s with length <length> chars for encrypt mode
-    -f, --folders                   Show folders only
-    -l, --log-file <file>           Create rikma log file
+options:
+  -h, --help            show this help message and exit
+  --encrypt             run in encrypt mode
+  --decrypt             run in decrypt mode
+  --type <file/folder>  type of object to encrypt/decrypt
+  --path <object>       path to object for encryption/decryption
+  --password <pass>     password for encryption/decryption
+  --gen-password <len>  generate password with <len> length
+  --dnp-gen-password    dont print generated password
+  --dnw-gen-password    dont write generated password to file
+  --no-colors           dont init colorama
+  --version             display version and quit
 ```
 
-* Encrypt
+* Run in default mode
 ```
-$ python rikma.py --encrypt
+$ python rikma.py
 ```
-* Decrypt
+* Run in default mode without colors
 ```
-$ python rikma.py --decrypt
+$ python rikma.py --no-colors
 ```
-* Encrypt/decrypt only one file
+* Encrypt folder with generated password 8 chars length
 ```
-$ python rikma.py --encrypt --one-file
-$ python rikma.py --decrypt --one-file
+$ python rikma.py --encrypt --type folder --path .\folder --gen-password 8
 ```
-* Encrypt/decrypt all subfolders in your path
+* Decrypt file with specified password
 ```
-$ python rikma.py --encrypt --all
-$ python rikma.py --decrypt --all
+$ python rikma.py --decrypt --type file --path .\folder\file.txt.enc --password pass
 ```
-* Encrypt with generated 3 keys with 8 chars length
+* Dont print generated password
 ```
-$ python rikma.py --encrypt --gen-keys 3 8
+$ python rikma.py --gen-password 256 --dnp-gen-password
 ```
-* Encrypt and create log file
+* Dont write to file generated password
 ```
-$ python rikma.py --encrypt --log-file log.txt
+$ python rikma.py --gen-password 256 --dnw-gen-password
+```
+* Display version
+```
+$ python rikma.py --version
 ```
 * Get help
 ```
