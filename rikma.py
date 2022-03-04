@@ -12,7 +12,7 @@ import os
 __name__ = 'rikma'
 __version__ = '1.1.0'
 
-# TODO: paths from file
+# TODO: log file
 
 spacescount = len(os.path.basename(sys.argv[0])) + 8
 spaces = ' ' * spacescount
@@ -300,7 +300,8 @@ if __name__ == 'rikma':
 
     try:
         if not args.encrypt and not args.decrypt:
-            modeask = input(f'\n{__info} Choose mode:\n{cmods.bbrb}(1){cmods.rs} Encrypt\n{cmods.bbrb}(2){cmods.rs} Decrypt\n > ').strip()
+            print(f'\n{__info} Choose mode:\n{cmods.bbrb}(1){cmods.rs} Encrypt\n{cmods.bbrb}(2){cmods.rs} Decrypt\n > ', end='')
+            modeask = input().strip()
 
             if ('1' not in modeask and '2' not in modeask) or ('1' in modeask and '2' in modeask):
                 sys.exit(1)
@@ -308,7 +309,8 @@ if __name__ == 'rikma':
             modeask = '1' if args.encrypt else '2'
 
         if args.type is None:
-            typeask = input(f'\n\n{__info} Choose what to encrypt/decrypt:\n{cmods.bbrb}(1){cmods.rs} File\n{cmods.bbrb}(2){cmods.rs} Folder\n > ').strip()
+            print(f'\n\n{__info} Choose what to encrypt/decrypt:\n{cmods.bbrb}(1){cmods.rs} File\n{cmods.bbrb}(2){cmods.rs} Folder\n > ', end='')
+            typeask = input().strip()
 
             if ('1' not in typeask and '2' not in typeask) or ('1' in typeask and '2' in typeask):
                 sys.exit(1)
@@ -317,7 +319,8 @@ if __name__ == 'rikma':
 
         if args.path is None:
             if sys.platform != 'win32':
-                pathask = input(f'\n\n{__info} Enter path to object for encryption/decryption:\n > ').strip()
+                print(f'\n\n{__info} Enter path to object for encryption/decryption:\n > ', end='')
+                pathask = input().strip()
 
                 if not os.path.exists(pathask):
                     print(f'\n{__errn} Path is not exists')
@@ -350,14 +353,16 @@ if __name__ == 'rikma':
             pathask = args.path[0]
 
         if args.passw is None:
-            passask = input(f'\n\n{__info} Enter password for encryption/decryption:\n{__warn} Spaces at start & end will be removed\n{__warn} Leave field empty, if you want to generate password\n > ').strip()
+            print(f'\n\n{__info} Enter password for encryption/decryption:\n{__warn} Spaces at start & end will be removed\n{__warn} Leave field empty, if you want to generate password\n > ', end='')
+            passask = input().strip()
 
             if len(passask) <= 1 and passask != '':
                 print(f'\n{__errn} Password length must be more than one')
                 sys.exit(1)
 
             if passask == '':
-                geneask = input(f'\n\n{__info} Enter length of generated password:\n > ').strip()
+                print(f'\n\n{__info} Enter length of generated password:\n > ', end='')
+                geneask = input().strip()
 
                 try:
                     int(geneask)
