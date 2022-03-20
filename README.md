@@ -1,5 +1,5 @@
 # rikma
-aes-256 encryptor/decryptor on python🐍
+aes-256 (GCM) encryptor/decryptor on python🐍
 
 <p align="center">
   <img src="https://user-images.githubusercontent.com/78678868/156518487-10021ef5-02a6-4f20-9fc1-64761bc3dcb1.gif" width=70% height=70%>
