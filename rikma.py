@@ -10,7 +10,7 @@ import sys
 import os
 
 __name__ = 'rikma'
-__version__ = '1.1.0'
+__version__ = '1.1.1'
 
 # TODO: log file
 # TODO: paths from file
