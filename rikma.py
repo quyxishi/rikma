@@ -13,11 +13,12 @@ __name__ = 'rikma'
 __version__ = '1.1.0'
 
 # TODO: log file
+# TODO: paths from file
 
 spacescount = len(os.path.basename(sys.argv[0])) + 8
 spaces = ' ' * spacescount
 
-parser = argparse.ArgumentParser(description='encrypt/decrypt files with aes-256 encryption', usage=f'{os.path.basename(sys.argv[0])} [-h, --help]\n{spaces}[--encrypt] [--decrypt]\n{spaces}[--type <file/folder>] [--path <object>]\n{spaces}[--password <pass>] [--gen-password <len>]\n{spaces}[--dnp-gen-password] [--dnw-gen-password]\n{spaces}[--no-colors]\n{spaces}[--version]')
+parser = argparse.ArgumentParser(description='encrypt/decrypt files with aes-256 gcm encryption', usage=f'{os.path.basename(sys.argv[0])} [-h, --help]\n{spaces}[--encrypt] [--decrypt]\n{spaces}[--type <file/folder>] [--path <object>]\n{spaces}[--password <pass>] [--gen-password <len>]\n{spaces}[--dnp-gen-password] [--dnw-gen-password]\n{spaces}[--no-colors]\n{spaces}[--version]')
 parser.add_argument('--encrypt', dest='encrypt', action='store_true', help='run in encrypt mode')
 parser.add_argument('--decrypt', dest='decrypt', action='store_true', help='run in decrypt mode')
 parser.add_argument('--type', metavar='<file/folder>', dest='type', type=str, nargs=1, help='type of object to encrypt/decrypt')
@@ -27,6 +28,7 @@ parser.add_argument('--gen-password', metavar='<len>', dest='genpass', type=int,
 parser.add_argument('--dnp-gen-password', dest='dnpgenpass', action='store_true', help='dont print generated password')
 parser.add_argument('--dnw-gen-password', dest='dnwgenpass', action='store_true', help='dont write generated password to file')
 parser.add_argument('--no-colors', dest='nocolors', action='store_true', help='dont init colorama')
+parser.add_argument('--no-pause', dest='nopause', action='store_true', help='dont pause once program has finished')
 parser.add_argument('--version', dest='ver', action='store_true', help='display version and quit')
 args = parser.parse_args()
 
@@ -231,7 +233,10 @@ def decrypt(file: str, password: str, buffersize: int = 128 * 1024, n: int = 17)
         except OSError:
             pass
 
-        print(f"{__errn} Can't decrypt: {e}")
+        if e.__class__ == ValueError:
+            print(f'{__errn} Incorrect password: {e}')
+        else:
+            print(f"{__errn} Can't decrypt: {e}")
 
         return False
 
@@ -423,6 +428,10 @@ if __name__ == 'rikma':
                 print(f'{__info} There were errors during encryption, successfully encrypted {totalfiles} file(s)\t{end}')
             else:
                 print(f'{__info} There were errors during decryption, successfully decrypted {totalfiles} file(s)\t{end}')
+        
+        if not args.nopause:
+            print()
+            os.system('pause')
     except KeyboardInterrupt:
         print(f'\n\n{__errn} KeyboardInterrupt')
         sys.exit(2)
