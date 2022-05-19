@@ -1,3 +1,2 @@
-pyAesCrypt
+colorama
 humanize
-datetime
