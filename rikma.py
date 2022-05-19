@@ -154,7 +154,7 @@ def encrypt(file: str, password: str, buffersize: int = 128 * 1024, n: int = 17,
         return False
 
     unkwfiles += 1
-    print(f'{getfilesize(file)} : {os.path.abspath(file)}' if newfile == file else f'{getfilesize(file)} : {os.path.abspath(file)}  ->  {newfile}')
+    print(f'{getfilesize(file)} {cmods.bbrb}:{cmods.rs} {os.path.abspath(file)}' if newfile == file else f'{getfilesize(file)} {cmods.bbrb}:{cmods.rs} {os.path.abspath(file)}  {cmods.bbrb}->{cmods.rs}  {newfile}')
 
     try:
         salt = get_random_bytes(32)
@@ -219,7 +219,7 @@ def decrypt(file: str, password: str, buffersize: int = 128 * 1024, n: int = 17,
         return False
 
     unkwfiles += 1
-    print(f'{getfilesize(file)} : {os.path.abspath(file)}' if newfile == file else f'{getfilesize(file)} : {os.path.abspath(file)}  ->  {newfile}')
+    print(f'{getfilesize(file)} {cmods.bbrb}:{cmods.rs} {os.path.abspath(file)}' if newfile == file else f'{getfilesize(file)} {cmods.bbrb}:{cmods.rs} {os.path.abspath(file)}  {cmods.bbrb}->{cmods.rs}  {newfile}')
 
     try:
         salt = filein.read(32)
