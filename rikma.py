@@ -10,7 +10,7 @@ import sys
 import os
 
 __name__ = 'rikma'
-__version__ = '1.1.1'
+__version__ = '1.1.2'
 
 # TODO: log file
 # TODO: paths from file
@@ -18,7 +18,7 @@ __version__ = '1.1.1'
 spacescount = len(os.path.basename(sys.argv[0])) + 8
 spaces = ' ' * spacescount
 
-parser = argparse.ArgumentParser(description='encrypt/decrypt files with aes-256 gcm encryption', usage=f'{os.path.basename(sys.argv[0])} [-h, --help]\n{spaces}[--encrypt] [--decrypt]\n{spaces}[--type <file/folder>] [--path <object>]\n{spaces}[--password <pass>] [--gen-password <len>]\n{spaces}[--dnp-gen-password] [--dnw-gen-password]\n{spaces}[--no-colors]\n{spaces}[--version]')
+parser = argparse.ArgumentParser(description='encrypt/decrypt files with aes-256 gcm encryption', usage=f'{os.path.basename(sys.argv[0])} [-h, --help]\n{spaces}[--encrypt] [--decrypt]\n{spaces}[--type <file/folder>] [--path <object>]\n{spaces}[--password <pass>] [--gen-password <len>]\n{spaces}[--dnp-gen-password] [--dnw-gen-password]\n{spaces}[--fast-mode]\n{spaces}[--no-colors]\n{spaces}[--version]')
 parser.add_argument('--encrypt', dest='encrypt', action='store_true', help='run in encrypt mode')
 parser.add_argument('--decrypt', dest='decrypt', action='store_true', help='run in decrypt mode')
 parser.add_argument('--type', metavar='<file/folder>', dest='type', type=str, nargs=1, help='type of object to encrypt/decrypt')
@@ -27,6 +27,7 @@ parser.add_argument('--password', metavar='<pass>', dest='passw', type=str, narg
 parser.add_argument('--gen-password', metavar='<len>', dest='genpass', type=int, nargs=1, help='generate password with <len> length')
 parser.add_argument('--dnp-gen-password', dest='dnpgenpass', action='store_true', help='dont print generated password')
 parser.add_argument('--dnw-gen-password', dest='dnwgenpass', action='store_true', help='dont write generated password to file')
+parser.add_argument('--fast-mode', dest='fastmode', action='store_true', help='lower cpu/memory cost factor, insecure')
 parser.add_argument('--no-colors', dest='nocolors', action='store_true', help='dont init colorama')
 parser.add_argument('--no-pause', dest='nopause', action='store_true', help='dont pause once program has finished')
 parser.add_argument('--version', dest='ver', action='store_true', help='display version and quit')
@@ -134,7 +135,6 @@ def encrypt(file: str, password: str, buffersize: int = 128 * 1024, n: int = 17)
 
     try:
         salt = get_random_bytes(32)
-        # noinspection PyTypeChecker
         key = scrypt(password, salt, key_len=32, N=2**n, r=8, p=1)
         fileout.write(salt)
 
@@ -194,7 +194,6 @@ def decrypt(file: str, password: str, buffersize: int = 128 * 1024, n: int = 17)
 
     try:
         salt = filein.read(32)
-        # noinspection PyTypeChecker
         key = scrypt(password, salt, key_len=32, N=2**n, r=8, p=1)
         nonce = filein.read(16)
 
@@ -234,14 +233,14 @@ def decrypt(file: str, password: str, buffersize: int = 128 * 1024, n: int = 17)
             pass
 
         if e.__class__ == ValueError:
-            print(f'{__errn} Incorrect password: {e}')
+            print(f'{__errn} Incorrect password or encrypted in fast mode: {e}')
         else:
             print(f"{__errn} Can't decrypt: {e}")
 
         return False
 
 
-def workwithdirs(folder: str, password: str, doencrypt: bool = False, dodecrypt: bool = False) -> None:
+def workwithdirs(folder: str, password: str, doencrypt: bool = False, dodecrypt: bool = False, n: int = 17) -> None:
     global unkwfiles
     global totalfiles
 
@@ -250,9 +249,9 @@ def workwithdirs(folder: str, password: str, doencrypt: bool = False, dodecrypt:
             fwpath = os.path.join(root, file)
 
             if doencrypt:
-                encrypt(fwpath, password)
+                encrypt(fwpath, password, n=n)
             elif dodecrypt:
-                decrypt(fwpath, password)
+                decrypt(fwpath, password, n=n)
 
     if unkwfiles == 0:
         print(f'{__warn} Files not found in this directory')
@@ -404,16 +403,16 @@ if __name__ == 'rikma':
 
         if '1' in modeask:
             if '1' in typeask:
-                status = encrypt(pathask, passask)
+                status = encrypt(pathask, passask, n=17 if not args.fastmode else 14)
             else:
                 status = True
-                workwithdirs(pathask, passask, doencrypt=True)
+                workwithdirs(pathask, passask, doencrypt=True, n=17 if not args.fastmode else 14)
         else:
             if '1' in typeask:
-                status = decrypt(pathask, passask)
+                status = decrypt(pathask, passask, n=17 if not args.fastmode else 14)
             else:
                 status = True
-                workwithdirs(pathask, passask, dodecrypt=True)
+                workwithdirs(pathask, passask, dodecrypt=True, n=17 if not args.fastmode else 14)
 
         end = time() - start
         print()
