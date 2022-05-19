@@ -10,7 +10,7 @@ import sys
 import os
 
 __name__ = 'rikma'
-__version__ = '1.1.2'
+__version__ = '1.1.3'
 
 # TODO: log file
 # TODO: paths from file
@@ -18,7 +18,7 @@ __version__ = '1.1.2'
 spacescount = len(os.path.basename(sys.argv[0])) + 8
 spaces = ' ' * spacescount
 
-parser = argparse.ArgumentParser(description='encrypt/decrypt files with aes-256 gcm encryption', usage=f'{os.path.basename(sys.argv[0])} [-h, --help]\n{spaces}[--encrypt] [--decrypt]\n{spaces}[--type <file/folder>] [--path <object>]\n{spaces}[--password <pass>] [--gen-password <len>]\n{spaces}[--dnp-gen-password] [--dnw-gen-password]\n{spaces}[--fast-mode]\n{spaces}[--no-colors]\n{spaces}[--version]')
+parser = argparse.ArgumentParser(description='encrypt/decrypt files with aes-256 gcm encryption', usage=f'{os.path.basename(sys.argv[0])} [-h, --help]\n{spaces}[--encrypt] [--decrypt]\n{spaces}[--type <file/folder>] [--path <object>]\n{spaces}[--password <pass>] [--gen-password <len>]\n{spaces}[--dnp-gen-password] [--dnw-gen-password]\n{spaces}[--fast-mode]\n{spaces}[--random-names]\n{spaces}[--no-colors]\n{spaces}[--version]')
 parser.add_argument('--encrypt', dest='encrypt', action='store_true', help='run in encrypt mode')
 parser.add_argument('--decrypt', dest='decrypt', action='store_true', help='run in decrypt mode')
 parser.add_argument('--type', metavar='<file/folder>', dest='type', type=str, nargs=1, help='type of object to encrypt/decrypt')
@@ -28,10 +28,16 @@ parser.add_argument('--gen-password', metavar='<len>', dest='genpass', type=int,
 parser.add_argument('--dnp-gen-password', dest='dnpgenpass', action='store_true', help='dont print generated password')
 parser.add_argument('--dnw-gen-password', dest='dnwgenpass', action='store_true', help='dont write generated password to file')
 parser.add_argument('--fast-mode', dest='fastmode', action='store_true', help='lower cpu/memory cost factor, insecure')
+parser.add_argument('--random-names', dest='randomnames', action='store_true', help='rename file names to random string')
 parser.add_argument('--no-colors', dest='nocolors', action='store_true', help='dont init colorama')
 parser.add_argument('--no-pause', dest='nopause', action='store_true', help='dont pause once program has finished')
 parser.add_argument('--version', dest='ver', action='store_true', help='display version and quit')
 args = parser.parse_args()
+
+
+def getrandomstr(size: int = 10) -> str:
+    return ''.join(choice(ascii_letters + digits) for _ in range(size))
+
 
 if args.ver:
     print(__version__)
@@ -76,7 +82,7 @@ if args.genpass is not None:
     # TODO: here repeat, shitty code
 
     args.passw = []
-    args.passw.append(''.join(choice(ascii_letters + digits) for _ in range(int(args.genpass[0]))))
+    args.passw.append(getrandomstr(int(args.genpass[0])))
 
     if not args.dnpgenpass:
         print(f'\n[i] Generated password: "{args.passw[0]}"')
@@ -117,21 +123,38 @@ def getfilesize(file: str) -> str:
     return naturalsize(os.stat(file).st_size, binary=True)
 
 
-def encrypt(file: str, password: str, buffersize: int = 128 * 1024, n: int = 17) -> bool:
+def randomnamefile(file: str) -> str:
+    newfilename = getrandomstr()
+
+    currentfiledir = os.path.dirname(file)
+    currentfile = os.path.basename(file).split('.')
+    currentfileext = '.' + '.'.join(currentfile[1:]) if len(currentfile) > 1 else ''
+
+    newfilepath = os.path.join(currentfiledir, newfilename + currentfileext)
+
+    return newfilepath
+
+
+def encrypt(file: str, password: str, buffersize: int = 128 * 1024, n: int = 17, randomnames: bool = False) -> bool:
     global unkwfiles
     global totalfiles
 
     if '.enc' in file:
         return False
 
+    if os.stat(file).st_size == 0:
+        return False
+
+    newfile = randomnamefile(os.path.abspath(file)) if randomnames else file
+
     try:
         filein = open(file, 'rb')
-        fileout = open(file + '.enc', 'wb')
+        fileout = open(newfile + '.enc', 'wb')
     except OSError:
         return False
 
     unkwfiles += 1
-    print('{0} : {1}'.format(getfilesize(file), os.path.abspath(file)))
+    print(f'{getfilesize(file)} : {os.path.abspath(file)}' if newfile == file else f'{getfilesize(file)} : {os.path.abspath(file)}  ->  {newfile}')
 
     try:
         salt = get_random_bytes(32)
@@ -165,7 +188,7 @@ def encrypt(file: str, password: str, buffersize: int = 128 * 1024, n: int = 17)
             filein.close()
             fileout.close()
 
-            os.remove(file + '.enc')
+            os.remove(newfile + '.enc')
         except NotImplementedError:
             pass
         except OSError:
@@ -176,21 +199,27 @@ def encrypt(file: str, password: str, buffersize: int = 128 * 1024, n: int = 17)
         return False
 
 
-def decrypt(file: str, password: str, buffersize: int = 128 * 1024, n: int = 17) -> bool:
+def decrypt(file: str, password: str, buffersize: int = 128 * 1024, n: int = 17, randomnames: bool = False) -> bool:
     global unkwfiles
     global totalfiles
 
     if '.enc' not in file:
         return False
+    
+    if os.stat(file).st_size == 0:
+        return False
+
+    newfile = randomnamefile(os.path.abspath(file)) if randomnames else file
+    formatedfileout = os.path.join(os.path.dirname(newfile), os.path.basename(newfile).replace('.enc', ''))
 
     try:
         filein = open(file, 'rb')
-        fileout = open(file.replace('.enc', ''), 'wb')
+        fileout = open(formatedfileout, 'wb')
     except OSError:
         return False
 
     unkwfiles += 1
-    print('{0} : {1}'.format(getfilesize(file), os.path.abspath(file)))
+    print(f'{getfilesize(file)} : {os.path.abspath(file)}' if newfile == file else f'{getfilesize(file)} : {os.path.abspath(file)}  ->  {newfile}')
 
     try:
         salt = filein.read(32)
@@ -226,7 +255,7 @@ def decrypt(file: str, password: str, buffersize: int = 128 * 1024, n: int = 17)
             filein.close()
             fileout.close()
 
-            os.remove(file.replace('.enc', ''))
+            os.remove(formatedfileout)
         except NotImplementedError:
             pass
         except OSError:
@@ -240,7 +269,7 @@ def decrypt(file: str, password: str, buffersize: int = 128 * 1024, n: int = 17)
         return False
 
 
-def workwithdirs(folder: str, password: str, doencrypt: bool = False, dodecrypt: bool = False, n: int = 17) -> None:
+def workwithdirs(folder: str, password: str, doencrypt: bool = False, dodecrypt: bool = False, n: int = 17, randomnames: bool = False) -> None:
     global unkwfiles
     global totalfiles
 
@@ -249,9 +278,9 @@ def workwithdirs(folder: str, password: str, doencrypt: bool = False, dodecrypt:
             fwpath = os.path.join(root, file)
 
             if doencrypt:
-                encrypt(fwpath, password, n=n)
+                encrypt(fwpath, password, n=n, randomnames=randomnames)
             elif dodecrypt:
-                decrypt(fwpath, password, n=n)
+                decrypt(fwpath, password, n=n, randomnames=randomnames)
 
     if unkwfiles == 0:
         print(f'{__warn} Files not found in this directory')
@@ -378,7 +407,7 @@ if __name__ == 'rikma':
                     print(f'\n{__errn} Password length must be more than one')
                     sys.exit(1)
 
-                passask = ''.join(choice(ascii_letters + digits) for _ in range(int(geneask)))
+                passask = getrandomstr(int(geneask))
 
                 if not args.dnpgenpass:
                     print(f'\n{__info} Generated password: "{passask}"')
@@ -403,16 +432,16 @@ if __name__ == 'rikma':
 
         if '1' in modeask:
             if '1' in typeask:
-                status = encrypt(pathask, passask, n=17 if not args.fastmode else 14)
+                status = encrypt(pathask, passask, n=17 if not args.fastmode else 14, randomnames=args.randomnames)
             else:
                 status = True
-                workwithdirs(pathask, passask, doencrypt=True, n=17 if not args.fastmode else 14)
+                workwithdirs(pathask, passask, doencrypt=True, n=17 if not args.fastmode else 14, randomnames=args.randomnames)
         else:
             if '1' in typeask:
-                status = decrypt(pathask, passask, n=17 if not args.fastmode else 14)
+                status = decrypt(pathask, passask, n=17 if not args.fastmode else 14, randomnames=args.randomnames)
             else:
                 status = True
-                workwithdirs(pathask, passask, dodecrypt=True, n=17 if not args.fastmode else 14)
+                workwithdirs(pathask, passask, dodecrypt=True, n=17 if not args.fastmode else 14, randomnames=args.randomnames)
 
         end = time() - start
         print()
