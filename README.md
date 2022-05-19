@@ -21,6 +21,8 @@ usage: rikma.py [-h, --help]
                 [--type <file/folder>] [--path <object>]
                 [--password <pass>] [--gen-password <len>]
                 [--dnp-gen-password] [--dnw-gen-password]
+                [--fast-mode]
+                [--random-names]
                 [--no-colors]
                 [--version]
 
@@ -36,6 +38,8 @@ options:
   --gen-password <len>  generate password with <len> length
   --dnp-gen-password    dont print generated password
   --dnw-gen-password    dont write generated password to file
+  --fast-mode           lower cpu/memory cost factor, insecure
+  --random-names        rename file names to random string
   --no-colors           dont init colorama
   --version             display version and quit
 ```
