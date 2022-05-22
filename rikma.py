@@ -19,7 +19,7 @@ __version__ = '1.1.4'
 spacescount = len(os.path.basename(sys.argv[0])) + 8
 spaces = ' ' * spacescount
 
-parser = argparse.ArgumentParser(description='encrypt/decrypt files with aes-256 gcm cipher', usage=f'{os.path.basename(sys.argv[0])} [-h, --help]\n{spaces}[--xchachapoly] [--aes]\n{spaces}[--encrypt] [--decrypt]\n{spaces}[--type <file/folder>] [--path <object>]\n{spaces}[--password <pass>] [--gen-password <len>]\n{spaces}[--dnp-gen-password] [--dnw-gen-password]\n{spaces}[--fast-mode]\n{spaces}[--random-names]\n{spaces}[--no-colors]\n{spaces}[--version]')
+parser = argparse.ArgumentParser(description='encrypt/decrypt files with xchacha20-poly1305 or aes-256 gcm cipher', usage=f'{os.path.basename(sys.argv[0])} [-h, --help]\n{spaces}[--xchachapoly] [--aes]\n{spaces}[--encrypt] [--decrypt]\n{spaces}[--type <file/folder>] [--path <object>]\n{spaces}[--password <pass>] [--gen-password <len>]\n{spaces}[--dnp-gen-password] [--dnw-gen-password]\n{spaces}[--fast-mode]\n{spaces}[--random-names]\n{spaces}[--no-colors]\n{spaces}[--version]')
 parser.add_argument('--xchachapoly', dest='xchachapoly', action='store_true', help='use xchacha20-poly1305 cipher')
 parser.add_argument('--aes', dest='aes', action='store_true', help='use aes-256 gcm cipher')
 parser.add_argument('--encrypt', dest='encrypt', action='store_true', help='run in encrypt mode')

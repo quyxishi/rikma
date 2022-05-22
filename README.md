@@ -1,5 +1,5 @@
 # rikma
-aes-256 (GCM) encryptor/decryptor on python🐍
+XChaCha20-Poly1305 & AES-256 (GCM) encryptor/decryptor on python🐍
 
 <p align="center">
   <img src="https://user-images.githubusercontent.com/78678868/156518487-10021ef5-02a6-4f20-9fc1-64761bc3dcb1.gif" width=70% height=70%>
@@ -27,7 +27,7 @@ usage: rikma.py [-h, --help]
                 [--no-colors]
                 [--version]
 
-encrypt/decrypt files with aes-256 gcm cipher
+encrypt/decrypt files with xchacha20-poly1305 or aes-256 gcm cipher
 
 options:
   -h, --help            show this help message and exit
