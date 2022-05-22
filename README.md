@@ -17,6 +17,7 @@ Usage
  
  
 usage: rikma.py [-h, --help]
+                [--xchachapoly] [--aes]
                 [--encrypt] [--decrypt]
                 [--type <file/folder>] [--path <object>]
                 [--password <pass>] [--gen-password <len>]
@@ -26,10 +27,12 @@ usage: rikma.py [-h, --help]
                 [--no-colors]
                 [--version]
 
-encrypt/decrypt files with aes-256 encryption
+encrypt/decrypt files with aes-256 gcm cipher
 
 options:
   -h, --help            show this help message and exit
+  --xchachapoly         use xchacha20-poly1305 cipher
+  --aes                 use aes-256 gcm cipher
   --encrypt             run in encrypt mode
   --decrypt             run in decrypt mode
   --type <file/folder>  type of object to encrypt/decrypt
@@ -48,17 +51,25 @@ options:
 ```
 $ python rikma.py
 ```
+* Use XChaCha20-Poly1305 cipher
+```
+$ python rikma.py --xchachapoly
+```
+* Use AES-256 GCM cipher
+```
+$ python rikma.py --aes
+```
 * Run in default mode without colors
 ```
 $ python rikma.py --no-colors
 ```
 * Encrypt folder with generated password 8 chars length
 ```
-$ python rikma.py --encrypt --type folder --path .\folder --gen-password 8
+$ python rikma.py --xchachapoly --encrypt --type folder --path .\folder --gen-password 8
 ```
 * Decrypt file with specified password
 ```
-$ python rikma.py --decrypt --type file --path .\folder\file.txt.enc --password pass
+$ python rikma.py --xchachapoly --decrypt --type file --path .\folder\file.txt.enc --password pass
 ```
 * Dont print generated password
 ```
