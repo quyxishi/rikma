@@ -2,6 +2,7 @@ from Crypto.Random import get_random_bytes
 from string import ascii_letters, digits
 from Crypto.Protocol.KDF import scrypt
 from humanize import naturalsize
+from Crypto.Cipher import ChaCha20_Poly1305
 from Crypto.Cipher import AES
 from time import sleep, time
 from random import choice
@@ -10,7 +11,7 @@ import sys
 import os
 
 __name__ = 'rikma'
-__version__ = '1.1.3'
+__version__ = '1.1.4'
 
 # TODO: log file
 # TODO: paths from file
@@ -18,7 +19,9 @@ __version__ = '1.1.3'
 spacescount = len(os.path.basename(sys.argv[0])) + 8
 spaces = ' ' * spacescount
 
-parser = argparse.ArgumentParser(description='encrypt/decrypt files with aes-256 gcm encryption', usage=f'{os.path.basename(sys.argv[0])} [-h, --help]\n{spaces}[--encrypt] [--decrypt]\n{spaces}[--type <file/folder>] [--path <object>]\n{spaces}[--password <pass>] [--gen-password <len>]\n{spaces}[--dnp-gen-password] [--dnw-gen-password]\n{spaces}[--fast-mode]\n{spaces}[--random-names]\n{spaces}[--no-colors]\n{spaces}[--version]')
+parser = argparse.ArgumentParser(description='encrypt/decrypt files with aes-256 gcm cipher', usage=f'{os.path.basename(sys.argv[0])} [-h, --help]\n{spaces}[--xchachapoly] [--aes]\n{spaces}[--encrypt] [--decrypt]\n{spaces}[--type <file/folder>] [--path <object>]\n{spaces}[--password <pass>] [--gen-password <len>]\n{spaces}[--dnp-gen-password] [--dnw-gen-password]\n{spaces}[--fast-mode]\n{spaces}[--random-names]\n{spaces}[--no-colors]\n{spaces}[--version]')
+parser.add_argument('--xchachapoly', dest='xchachapoly', action='store_true', help='use xchacha20-poly1305 cipher')
+parser.add_argument('--aes', dest='aes', action='store_true', help='use aes-256 gcm cipher')
 parser.add_argument('--encrypt', dest='encrypt', action='store_true', help='run in encrypt mode')
 parser.add_argument('--decrypt', dest='decrypt', action='store_true', help='run in decrypt mode')
 parser.add_argument('--type', metavar='<file/folder>', dest='type', type=str, nargs=1, help='type of object to encrypt/decrypt')
@@ -135,7 +138,7 @@ def randomnamefile(file: str) -> str:
     return newfilepath
 
 
-def encrypt(file: str, password: str, buffersize: int = 128 * 1024, n: int = 17, randomnames: bool = False) -> bool:
+def aesencrypt(file: str, password: str, buffersize: int = 128 * 1024, n: int = 17, randomnames: bool = False) -> bool:
     global unkwfiles
     global totalfiles
 
@@ -199,7 +202,7 @@ def encrypt(file: str, password: str, buffersize: int = 128 * 1024, n: int = 17,
         return False
 
 
-def decrypt(file: str, password: str, buffersize: int = 128 * 1024, n: int = 17, randomnames: bool = False) -> bool:
+def aesdecrypt(file: str, password: str, buffersize: int = 128 * 1024, n: int = 17, randomnames: bool = False) -> bool:
     global unkwfiles
     global totalfiles
 
@@ -269,7 +272,149 @@ def decrypt(file: str, password: str, buffersize: int = 128 * 1024, n: int = 17,
         return False
 
 
-def workwithdirs(folder: str, password: str, doencrypt: bool = False, dodecrypt: bool = False, n: int = 17, randomnames: bool = False) -> None:
+def xchachapolyencrypt(file: str, password: str, buffersize: int = 128 * 1024, n: int = 17, randomnames: bool = False) -> bool:
+    global unkwfiles
+    global totalfiles
+
+    if '.enc' in file:
+        return False
+
+    if os.stat(file).st_size == 0:
+        return False
+
+    newfile = randomnamefile(os.path.abspath(file)) if randomnames else file
+
+    try:
+        filein = open(file, 'rb')
+        fileout = open(newfile + '.enc', 'wb')
+    except OSError:
+        return False
+
+    unkwfiles += 1
+    print(f'{getfilesize(file)} {cmods.bbrb}:{cmods.rs} {os.path.abspath(file)}' if newfile == file else f'{getfilesize(file)} {cmods.bbrb}:{cmods.rs} {os.path.abspath(file)}  {cmods.bbrb}->{cmods.rs}  {newfile}')
+
+    try:
+        salt = get_random_bytes(32)
+        key = scrypt(password, salt, key_len=32, N=2**n, r=8, p=1)
+        fileout.write(salt)
+
+        nonce = get_random_bytes(24)
+        fileout.write(nonce)
+        aad = get_random_bytes(32)
+        fileout.write(aad)
+
+        cipher = ChaCha20_Poly1305.new(key=key, nonce=nonce)
+        cipher.update(aad)
+
+        data = filein.read(buffersize)
+
+        while len(data) != 0:
+            encdata = cipher.encrypt(data)
+            fileout.write(encdata)
+
+            data = filein.read(buffersize)
+        
+        tag = cipher.digest()
+        fileout.write(tag)
+
+        filein.close()
+        fileout.close()
+
+        totalfiles += 1
+
+        overwritefile(file)
+
+        return True
+    except Exception as e:
+        try:
+            filein.close()
+            fileout.close()
+
+            os.remove(newfile + '.enc')
+        except NotImplementedError:
+            pass
+        except OSError:
+            pass
+
+        print(f"{__errn} Can't encrypt: {e}")
+
+        return False
+
+
+def xchachapolydecrypt(file: str, password: str, buffersize: int = 128 * 1024, n: int = 17, randomnames: bool = False) -> bool:
+    global unkwfiles
+    global totalfiles
+
+    if '.enc' not in file:
+        return False
+    
+    if os.stat(file).st_size == 0:
+        return False
+
+    newfile = randomnamefile(os.path.abspath(file)) if randomnames else file
+    formatedfileout = os.path.join(os.path.dirname(newfile), os.path.basename(newfile).replace('.enc', ''))
+
+    try:
+        filein = open(file, 'rb')
+        fileout = open(formatedfileout, 'wb')
+    except OSError:
+        return False
+
+    unkwfiles += 1
+    print(f'{getfilesize(file)} {cmods.bbrb}:{cmods.rs} {os.path.abspath(file)}' if newfile == file else f'{getfilesize(file)} {cmods.bbrb}:{cmods.rs} {os.path.abspath(file)}  {cmods.bbrb}->{cmods.rs}  {newfile}')
+
+    try:
+        salt = filein.read(32)
+        key = scrypt(password, salt, key_len=32, N=2**n, r=8, p=1)
+
+        nonce = filein.read(24)
+        aad = filein.read(32)
+
+        cipher = ChaCha20_Poly1305.new(key=key, nonce=nonce)
+        cipher.update(aad)
+
+        encdatasize = os.path.getsize(file) - 104
+
+        for _ in range(int(encdatasize / buffersize)):
+            data = filein.read(buffersize)
+            decdata = cipher.decrypt(data)
+            fileout.write(decdata)
+        
+        data = filein.read(int(encdatasize % buffersize))
+        decdata = cipher.decrypt(data)
+        fileout.write(decdata)
+        
+        tag = filein.read(16)
+        cipher.verify(tag)
+
+        filein.close()
+        fileout.close()
+
+        totalfiles += 1
+
+        os.remove(file)
+
+        return True
+    except Exception as e:
+        try:
+            filein.close()
+            fileout.close()
+
+            os.remove(formatedfileout)
+        except NotImplementedError:
+            pass
+        except OSError:
+            pass
+
+        if e.__class__ == ValueError:
+            print(f'{__errn} Incorrect password or encrypted in fast mode: {e}')
+        else:
+            print(f"{__errn} Can't decrypt: {e}")
+
+        return False
+
+
+def workwithdirs(folder: str, password: str, encryptordecrypt: bool, xchachapolyoraes: bool, n: int = 17, randomnames: bool = False) -> None:
     global unkwfiles
     global totalfiles
 
@@ -277,10 +422,16 @@ def workwithdirs(folder: str, password: str, doencrypt: bool = False, dodecrypt:
         for file in files:
             fwpath = os.path.join(root, file)
 
-            if doencrypt:
-                encrypt(fwpath, password, n=n, randomnames=randomnames)
-            elif dodecrypt:
-                decrypt(fwpath, password, n=n, randomnames=randomnames)
+            if xchachapolyoraes:
+                if encryptordecrypt:
+                    xchachapolyencrypt(fwpath, password, n=n, randomnames=randomnames)
+                else:
+                    xchachapolydecrypt(fwpath, password, n=n, randomnames=randomnames)
+            else:
+                if encryptordecrypt:
+                    aesencrypt(fwpath, password, n=n, randomnames=randomnames)
+                else:
+                    aesdecrypt(fwpath, password, n=n, randomnames=randomnames)
 
     if unkwfiles == 0:
         print(f'{__warn} Files not found in this directory')
@@ -332,6 +483,15 @@ if __name__ == 'rikma':
     printlogo(cmods)
 
     try:
+        if not args.xchachapoly and not args.aes:
+            print(f'\n{__info} Choose cipher:\n{cmods.bbrb}(1){cmods.rs} XChaCha20-Poly1305\n{cmods.bbrb}(2){cmods.rs} AES-256 GCM\n > ', end='')
+            cipherask = input().strip()
+
+            if ('1' not in cipherask and '2' not in cipherask) or ('1' in cipherask and '2' in cipherask):
+                sys.exit(1)
+        else:
+            cipherask = '1' if args.xchachapoly else '2'
+
         if not args.encrypt and not args.decrypt:
             print(f'\n{__info} Choose mode:\n{cmods.bbrb}(1){cmods.rs} Encrypt\n{cmods.bbrb}(2){cmods.rs} Decrypt\n > ', end='')
             modeask = input().strip()
@@ -432,16 +592,16 @@ if __name__ == 'rikma':
 
         if '1' in modeask:
             if '1' in typeask:
-                status = encrypt(pathask, passask, n=17 if not args.fastmode else 14, randomnames=args.randomnames)
+                status = xchachapolyencrypt(pathask, passask, n=17 if not args.fastmode else 14, randomnames=args.randomnames) if '1' in cipherask else aesencrypt(pathask, passask, n=17 if not args.fastmode else 14, randomnames=args.randomnames)
             else:
                 status = True
-                workwithdirs(pathask, passask, doencrypt=True, n=17 if not args.fastmode else 14, randomnames=args.randomnames)
+                workwithdirs(pathask, passask, encryptordecrypt=True, xchachapolyoraes='1' in cipherask, n=17 if not args.fastmode else 14, randomnames=args.randomnames)
         else:
             if '1' in typeask:
-                status = decrypt(pathask, passask, n=17 if not args.fastmode else 14, randomnames=args.randomnames)
+                status = xchachapolydecrypt(pathask, passask, n=17 if not args.fastmode else 14, randomnames=args.randomnames) if '1' in cipherask else aesdecrypt(pathask, passask, n=17 if not args.fastmode else 14, randomnames=args.randomnames)
             else:
                 status = True
-                workwithdirs(pathask, passask, dodecrypt=True, n=17 if not args.fastmode else 14, randomnames=args.randomnames)
+                workwithdirs(pathask, passask, encryptordecrypt=False, xchachapolyoraes='1' in cipherask, n=17 if not args.fastmode else 14, randomnames=args.randomnames)
 
         end = time() - start
         print()
