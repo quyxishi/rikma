@@ -19,8 +19,8 @@ Usage
 usage: rikma.py [-h, --help]
                 [--xchachapoly] [--aes]
                 [--encrypt] [--decrypt]
-                [--type <file/folder>] [--path <object>]
-                [--password <pass>] [--gen-password <len>]
+                [--type <file/folder>] [--path <object>] [--path-file <object>]
+                [--password <pass>] [--show-password] [--gen-password <len>]
                 [--dnp-gen-password] [--dnw-gen-password]
                 [--fast-mode]
                 [--random-names]
@@ -37,7 +37,9 @@ options:
   --decrypt             run in decrypt mode
   --type <file/folder>  type of object to encrypt/decrypt
   --path <object>       path to object for encryption/decryption
+  --path-file <object>  load paths from file to object for encryption/decryption
   --password <pass>     password for encryption/decryption
+  --show-password       dont ask for password validation, show password
   --gen-password <len>  generate password with <len> length
   --dnp-gen-password    dont print generated password
   --dnw-gen-password    dont write generated password to file
