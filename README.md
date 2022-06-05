@@ -37,7 +37,7 @@ options:
   --decrypt             run in decrypt mode
   --type <file/folder>  type of object to encrypt/decrypt
   --path <object>       path to object for encryption/decryption
-  --path-file <object>  load paths from file to object for encryption/decryption
+  --path-file <object>  load paths from file for encryption/decryption
   --password <pass>     password for encryption/decryption
   --show-password       dont ask for password validation, show password
   --gen-password <len>  generate password with <len> length

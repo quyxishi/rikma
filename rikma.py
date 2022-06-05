@@ -26,7 +26,7 @@ parser.add_argument('--encrypt', dest='encrypt', action='store_true', help='run 
 parser.add_argument('--decrypt', dest='decrypt', action='store_true', help='run in decrypt mode')
 parser.add_argument('--type', metavar='<file/folder>', dest='type', type=str, nargs=1, help='type of object to encrypt/decrypt')
 parser.add_argument('--path', metavar='<object>', dest='path', type=str, nargs=1, help='path to object for encryption/decryption')
-parser.add_argument('--path-file', metavar='<object>', dest='pathsfromfile', type=str, nargs=1, help='load paths from file to object for encryption/decryption')
+parser.add_argument('--path-file', metavar='<object>', dest='pathsfromfile', type=str, nargs=1, help='load paths from file for encryption/decryption')
 parser.add_argument('--password', metavar='<pass>', dest='passw', type=str, nargs=1, help='password for encryption/decryption')
 parser.add_argument('--show-password', dest='showpassword', action='store_true', help='dont ask for password validation, show password')
 parser.add_argument('--gen-password', metavar='<len>', dest='genpass', type=int, nargs=1, help='generate password with <len> length')
