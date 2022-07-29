@@ -4,7 +4,7 @@ from Crypto.Protocol.KDF import scrypt
 from humanize import naturalsize
 from Crypto.Cipher import ChaCha20_Poly1305
 from Crypto.Cipher import AES
-from time import sleep, time
+from time import sleep, time, strftime, gmtime
 from pwinput import pwinput
 from random import choice
 import argparse
@@ -12,9 +12,7 @@ import sys
 import os
 
 __name__ = 'rikma'
-__version__ = '1.1.5'
-
-# TODO: log file
+__version__ = '1.1.6'
 
 spacescount = len(os.path.basename(sys.argv[0])) + 8
 spaces = ' ' * spacescount
@@ -32,6 +30,7 @@ parser.add_argument('--show-password', dest='showpassword', action='store_true',
 parser.add_argument('--gen-password', metavar='<len>', dest='genpass', type=int, nargs=1, help='generate password with <len> length')
 parser.add_argument('--dnp-gen-password', dest='dnpgenpass', action='store_true', help='dont print generated password')
 parser.add_argument('--dnw-gen-password', dest='dnwgenpass', action='store_true', help='dont write generated password to file')
+parser.add_argument('--log-file', dest='logfile', action='store_true', help='write stdout & stderr to generated file too, no colors')
 parser.add_argument('--fast-mode', dest='fastmode', action='store_true', help='lower cpu/memory cost factor, insecure')
 parser.add_argument('--random-names', dest='randomnames', action='store_true', help='rename file names to random string')
 parser.add_argument('--no-colors', dest='nocolors', action='store_true', help='dont init colorama')
@@ -43,6 +42,22 @@ args = parser.parse_args()
 def getrandomstr(size: int = 10) -> str:
     return ''.join(choice(ascii_letters + digits) for _ in range(size))
 
+if args.logfile:
+    class Writers(object):
+        def __init__(self, *writers):
+            self.writers = writers
+
+        def write(self, string):
+            for w in self.writers:
+                w.write(string)
+
+        def flush(self):
+            for w in self.writers:
+                w.flush()
+
+    logfile = open(strftime('rikma-%mm%dd%Yy-%Hh%Mm%SsUTC.log', gmtime(time())), 'w')
+    sys.stdout = Writers(sys.__stdout__, logfile)
+    sys.stderr = Writers(sys.__stdout__, logfile)
 
 if args.ver:
     print(__version__)
@@ -511,11 +526,10 @@ def askopen(title: str, filetypes: tuple, folder: bool = False) -> str:
 
 
 if __name__ == 'rikma':
-    if not args.nocolors:
+    if not args.nocolors and not args.logfile:
         import colorama
 
         colorama.init(autoreset=True)
-
 
         class cmods:
             rs = '\x1b[0m'
@@ -701,6 +715,11 @@ if __name__ == 'rikma':
             else:
                 print(f'{__info} There were errors during decryption, successfully decrypted {totalfiles} file(s)\t{end}')
         
+        if args.logfile:
+            sys.stdout = sys.__stdout__
+            sys.stderr = sys.__stderr__
+            logfile.close()
+
         if not args.nopause:
             print()
             os.system('pause')
