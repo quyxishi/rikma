@@ -1,3 +1,4 @@
 colorama
 humanize
 pycryptodome
+pwinput
